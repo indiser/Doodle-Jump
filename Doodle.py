@@ -1,18 +1,21 @@
 import pygame
 
 class Player:
-    def __init__(self, x, y, image):
-        self.image = image
+    def __init__(self, x, y, image_right, image_left):
+        self.image_right = image_right
+        self.image_left = image_left
+        self.image = image_right
         self.rect = self.image.get_rect(midbottom=(x, y))
         self.y_velocity = 0
 
     def move(self, keys, move_speed, screen_width):
         if keys[pygame.K_LEFT]:
             self.rect.x -= move_speed
+            self.image = self.image_left
         if keys[pygame.K_RIGHT]:
             self.rect.x += move_speed
+            self.image = self.image_right
 
-        # Screen Wrap
         if self.rect.right < 0:
             self.rect.left = screen_width
         elif self.rect.left > screen_width:

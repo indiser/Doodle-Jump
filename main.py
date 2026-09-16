@@ -22,11 +22,11 @@ start_y = screen_rect.bottom - 20
 start_p = Platform(start_x, start_y, platform)
 platforms.append(start_p)
 
-player = Player(screen_rect.centerx, start_p.rect.top, doodle)
+player = Player(screen_rect.centerx, start_p.rect.top, doodle_right, doodle_left)
 
 current_y = start_p.rect.top
 while current_y > 0:
-    gap = random.randint(60, 120) 
+    gap = random.randint(60, 120)
     current_y -= gap
     p_x = random.randint(0, WIDTH - PLATFORM_WIDTH)
     platforms.append(Platform(p_x, current_y, platform))
@@ -83,11 +83,9 @@ while running:
 
                 # Spawn Feeder on top of the new platform
                 if score > FEEDER_THRESHOLD and random.randint(1, 10) == 1:
-                    # Feeder __init__ takes x and y for midbottom
-                    new_feeder = Feeder(new_plat.rect.centerx, new_plat.rect.top, feeder_down, feeder_up)
+                    new_feeder = Feeder(new_plat.rect.centerx + 15, new_plat.rect.top - 5, feeder_down, feeder_up)
                     active_feeders.append(new_feeder)
 
-        # Shift feeders and clean up
         for f in active_feeders[:]:
             f.scroll(shift)
             if f.rect.top >= HEIGHT:
