@@ -38,7 +38,11 @@ exploding_platform1 = pygame.transform.scale(exploding_platform1, (PLATFORM_WIDT
 exploding_platform2 = pygame.image.load(get_path('Game_Assests/sprites/explosive_platform2.png'))
 exploding_platform2 = pygame.transform.scale(exploding_platform2, (PLATFORM_WIDTH, PLATFORM_HEIGHT))
 
+horizental_platform = pygame.image.load(get_path('Game_Assests/sprites/horizontal_platform.png'))
+horizental_platform = pygame.transform.scale(horizental_platform, (PLATFORM_WIDTH, PLATFORM_HEIGHT))
 
+vertical_platform = pygame.image.load(get_path('Game_Assests/sprites/vertical_platform.png'))
+vertical_platform = pygame.transform.scale(vertical_platform, (PLATFORM_WIDTH, PLATFORM_HEIGHT))
 
 feeder_down = pygame.image.load(get_path('Game_Assests/sprites/feder.png'))
 feeder_down = pygame.transform.scale(feeder_down, (FEEDER_WIDTH, FEEDER_HEIGHT))

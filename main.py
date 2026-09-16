@@ -3,7 +3,7 @@ from config import HEIGHT, WIDTH
 from assets import *
 import random
 from Doodle import Player
-from Platform import Platform, ExplodingPlatform
+from Platform import Platform, ExplodingPlatform, MovingPlatform
 from Feeder import Feeder
 
 pygame.init()
@@ -18,21 +18,21 @@ active_feeders = []
 score = 0
 
 broken_frames = [broken_platform0, broken_platform1, broken_platform2, broken_platform3]
-def make_platform(x, y):
-    if random.randint(1, 5) == 1:  # 1-in-5 breakable, tune to taste
-        return Platform(x, y, broken_platform0, breakable=True, broken_frames=broken_frames)
-    return Platform(x, y, platform)
 
 explosive_frames = [exploding_platform0, exploding_platform1, exploding_platform2]
 
-def make_platform(x, y):
-    roll = random.randint(1, 10)
-    if roll <= 2:  # 20% chance for a broken platform
-        return Platform(x, y, broken_platform0, breakable=True, broken_frames=broken_frames)
-    elif roll <= 4: # 20% chance for an explosive platform
-        return ExplodingPlatform(x, y, explosive_frames)
+def make_platform(x, y, current_score):
+    roll = random.randint(1, 100)
     
-    # 60% chance for a normal platform
+    if roll <= 10:   # 10% Horizontal
+        return MovingPlatform(x, y, horizental_platform, 'horizontal', current_score)
+    elif roll <= 20: # 10% Vertical
+        return MovingPlatform(x, y, vertical_platform, 'vertical', current_score)
+    elif roll <= 35: # 15% Explosive
+        return ExplodingPlatform(x, y, explosive_frames)
+    elif roll <= 50: # 15% Broken
+        return Platform(x, y, broken_platform0, breakable=True, broken_frames=broken_frames)
+        
     return Platform(x, y, platform)
 
 start_x = screen_rect.centerx - (PLATFORM_WIDTH // 2)
@@ -47,7 +47,7 @@ while current_y > 0:
     gap = random.randint(60, 120)
     current_y -= gap
     p_x = random.randint(0, WIDTH - PLATFORM_WIDTH)
-    platforms.append(make_platform(p_x, current_y))
+    platforms.append(make_platform(p_x, current_y, score))
 
 
 
@@ -90,10 +90,10 @@ while running:
             new_x = random.randint(0, WIDTH - PLATFORM_WIDTH)
             highest_y = min([plat.rect.y for plat in platforms])
             new_y = highest_y - random.randint(60, 120)
-            new_plat = make_platform(new_x, new_y)
+            new_plat = make_platform(new_x, new_y, score)
             platforms.append(new_plat)
 
-            if not new_plat.breakable and not getattr(new_plat, 'is_explosive', False) and score > FEEDER_THRESHOLD and random.randint(1, 10) == 1:
+            if type(new_plat) is Platform and not new_plat.breakable and score > FEEDER_THRESHOLD and random.randint(1, 10) == 1:
                 new_feeder = Feeder(new_plat.rect.centerx, new_plat.rect.top, feeder_down, feeder_up)
                 active_feeders.append(new_feeder)
 
@@ -115,11 +115,11 @@ while running:
                 new_x = random.randint(0, WIDTH - PLATFORM_WIDTH)
                 highest_y = min([plat.rect.y for plat in platforms]) 
                 new_y = highest_y - random.randint(60, 120)
-                new_plat = make_platform(new_x, new_y)
+                new_plat = make_platform(new_x, new_y, score)
                 platforms.append(new_plat)
 
                 # Spawn Feeder on top of the new platform
-                if not new_plat.breakable and not getattr(new_plat, 'is_explosive', False) and score > FEEDER_THRESHOLD and random.randint(1, 10) == 1:
+                if type(new_plat) is Platform and not new_plat.breakable and score > FEEDER_THRESHOLD and random.randint(1, 10) == 1:
                     new_feeder = Feeder(new_plat.rect.centerx + 15, new_plat.rect.top - 5, feeder_down, feeder_up)
                     active_feeders.append(new_feeder)
 

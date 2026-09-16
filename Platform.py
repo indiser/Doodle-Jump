@@ -1,3 +1,5 @@
+from config import *
+
 class Platform:
     def __init__(self, x, y, image, breakable=False, broken_frames=None):
         self.image = image
@@ -66,3 +68,31 @@ class ExplodingPlatform(Platform):
     def draw(self, surface):
         # Always draw the current image until the vanish_time deletes it
         surface.blit(self.image, self.rect)
+
+
+class MovingPlatform(Platform):
+    def __init__(self, x, y, image, axis, current_score):
+        super().__init__(x, y, image)
+        self.axis = axis
+        # Speed scales up by 1 for every 3000 points
+        self.speed = 2 + (int(current_score) // 3000) 
+        self.direction = 1
+        self.start_y = y
+        self.range = 75 # Pixels it can travel up/down before reversing
+
+    def update(self):
+        if self.axis == 'horizontal':
+            self.rect.x += self.speed * self.direction
+            if self.rect.right >= WIDTH or self.rect.left <= 0:
+                self.direction *= -1
+
+        elif self.axis == 'vertical':
+            self.rect.y += self.speed * self.direction
+            # Reverse direction if it moves too far from its original spawn Y
+            if abs(self.rect.y - self.start_y) > self.range:
+                self.direction *= -1
+                
+    def scroll(self, amount):
+        super().scroll(amount)
+        # Shift the start_y so vertical platforms don't fly off screen when the camera moves
+        self.start_y -= amount
