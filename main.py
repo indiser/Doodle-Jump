@@ -3,7 +3,7 @@ from config import HEIGHT, WIDTH
 from assets import *
 import random
 from Doodle import Player
-from Platform import Platform
+from Platform import Platform, ExplodingPlatform
 from Feeder import Feeder
 
 pygame.init()
@@ -17,6 +17,24 @@ platforms = []
 active_feeders = []
 score = 0
 
+broken_frames = [broken_platform0, broken_platform1, broken_platform2, broken_platform3]
+def make_platform(x, y):
+    if random.randint(1, 5) == 1:  # 1-in-5 breakable, tune to taste
+        return Platform(x, y, broken_platform0, breakable=True, broken_frames=broken_frames)
+    return Platform(x, y, platform)
+
+explosive_frames = [exploding_platform0, exploding_platform1, exploding_platform2]
+
+def make_platform(x, y):
+    roll = random.randint(1, 10)
+    if roll <= 2:  # 20% chance for a broken platform
+        return Platform(x, y, broken_platform0, breakable=True, broken_frames=broken_frames)
+    elif roll <= 4: # 20% chance for an explosive platform
+        return ExplodingPlatform(x, y, explosive_frames)
+    
+    # 60% chance for a normal platform
+    return Platform(x, y, platform)
+
 start_x = screen_rect.centerx - (PLATFORM_WIDTH // 2)
 start_y = screen_rect.bottom - 20
 start_p = Platform(start_x, start_y, platform)
@@ -29,7 +47,8 @@ while current_y > 0:
     gap = random.randint(60, 120)
     current_y -= gap
     p_x = random.randint(0, WIDTH - PLATFORM_WIDTH)
-    platforms.append(Platform(p_x, current_y, platform))
+    platforms.append(make_platform(p_x, current_y))
+
 
 
 while running:
@@ -55,10 +74,28 @@ while running:
 
         if not hit_feeder:
             for p in platforms:
-                if player.rect.colliderect(p.rect):
+                if not p.broken and player.rect.colliderect(p.rect):
                     player.rect.bottom = p.rect.top
                     player.jump(JUMP_STRENGTH)
+                    if p.breakable:
+                        p.break_platform()
                     break
+
+    # --- 2.5 UPDATE/CLEANUP PLATFORMS (every frame) ---
+    for p in platforms[:]:
+        p.update()
+        if p.finished or p.rect.top >= HEIGHT:
+            platforms.remove(p)
+
+            new_x = random.randint(0, WIDTH - PLATFORM_WIDTH)
+            highest_y = min([plat.rect.y for plat in platforms])
+            new_y = highest_y - random.randint(60, 120)
+            new_plat = make_platform(new_x, new_y)
+            platforms.append(new_plat)
+
+            if not new_plat.breakable and not getattr(new_plat, 'is_explosive', False) and score > FEEDER_THRESHOLD and random.randint(1, 10) == 1:
+                new_feeder = Feeder(new_plat.rect.centerx, new_plat.rect.top, feeder_down, feeder_up)
+                active_feeders.append(new_feeder)
 
     # --- 3. CAMERA & WORLD SHIFT ---
     scroll_threshold = HEIGHT // 3
@@ -78,11 +115,11 @@ while running:
                 new_x = random.randint(0, WIDTH - PLATFORM_WIDTH)
                 highest_y = min([plat.rect.y for plat in platforms]) 
                 new_y = highest_y - random.randint(60, 120)
-                new_plat = Platform(new_x, new_y, platform)
+                new_plat = make_platform(new_x, new_y)
                 platforms.append(new_plat)
 
                 # Spawn Feeder on top of the new platform
-                if score > FEEDER_THRESHOLD and random.randint(1, 10) == 1:
+                if not new_plat.breakable and not getattr(new_plat, 'is_explosive', False) and score > FEEDER_THRESHOLD and random.randint(1, 10) == 1:
                     new_feeder = Feeder(new_plat.rect.centerx + 15, new_plat.rect.top - 5, feeder_down, feeder_up)
                     active_feeders.append(new_feeder)
 
