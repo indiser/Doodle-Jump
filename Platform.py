@@ -1,4 +1,5 @@
 from config import *
+from assets import exploding_platform_sound
 
 class Platform:
     def __init__(self, x, y, image, breakable=False, broken_frames=None):
@@ -61,14 +62,16 @@ class ExplodingPlatform(Platform):
             self.image = self.frames[2] # Draw the explosion frame
             self.broken = True # Instantly disables collisions in main.py
             
+            exploding_platform_sound.play()
+            
         # Phase 1: Warning
         elif self.timer > self.warning_time and not self.exploded:
             self.image = self.frames[1] # Draw the red warning frame
 
+
     def draw(self, surface):
         # Always draw the current image until the vanish_time deletes it
         surface.blit(self.image, self.rect)
-
 
 class MovingPlatform(Platform):
     def __init__(self, x, y, image, axis, current_score):
