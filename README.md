@@ -140,7 +140,7 @@ python main.py
 
 ```bash
 pip install pyinstaller
-pyinstaller --onefile --windowed --icon=icon.ico main.py
+pyinstaller --noconsole --onefile --name="Doodle Jump" --icon=icon.ico --add-data "Game_Assests;Game_Assests" --add-data "icon.ico;." main.py
 ```
 
 `assets.py` uses `sys._MEIPASS` detection so all assets resolve correctly inside the bundle. No `FileNotFoundError` surprises at 2 AM.
